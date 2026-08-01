@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { screenings, movies, rooms } = require("../data/db");
+const { screenings, movies, rooms, reservations } = require("../data/db");
 
 router.get("/", (req, res) => {
   const { date, movieId, roomId } = req.query;
@@ -25,6 +25,54 @@ router.get("/", (req, res) => {
   }
 
   return res.status(200).json(filteredScreenings);
+});
+
+router.get("/:id/seats", (req, res) => {
+  const { id } = req.params;
+  const screening = screenings.find(
+    (screening) => screening.id === parseInt(id),
+  );
+
+  if (!screening) {
+    return res
+      .status(404)
+      .json({ error: "RESOURCE_NOT_FOUND", message: "Screening not found" });
+  }
+
+  const room = rooms.find((room) => room.id === screening.roomId);
+
+  if (!room) {
+    return res
+      .status(404)
+      .json({ error: "RESOURCE_NOT_FOUND", message: "Room not found" });
+  }
+  const screeningReservations = reservations.filter(
+    (r) => r.screeningId === screening.id,
+  );
+  const takenSeats = screeningReservations.flatMap((r) => r.seats);
+
+  const seats = [];
+  for (let r = 1; r <= room.capacityRow; r++) {
+    for (let c = 1; c <= room.capacityColumn; c++) {
+      const isTaken = takenSeats.some(
+        (seat) => seat.row === r && seat.column === c,
+      );
+      seats.push({
+        row: r,
+        column: c,
+        status: isTaken ? "taken" : "available",
+      });
+    }
+  }
+
+  return res.status(200).json({
+    screeningId: screening.id,
+    roomId: room.id,
+    roomName: room.name,
+    capacityRow: room.capacityRow,
+    capacityColumn: room.capacityColumn,
+    seats,
+  });
 });
 
 router.get("/:id", (req, res) => {
