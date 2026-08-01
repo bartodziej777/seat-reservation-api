@@ -68,7 +68,26 @@ const screenings = [
     email: "john.doe@example.com"
 }
 */
-const reservations = [];
+const reservations = [
+  {
+    id: 1,
+    screeningId: 1,
+    seats: [
+      { row: 1, column: 5 },
+      { row: 1, column: 6 },
+    ],
+    email: "john@example.com",
+  },
+  {
+    id: 2,
+    screeningId: 1,
+    seats: [
+      { row: 2, column: 3 },
+      { row: 2, column: 4 },
+    ],
+    email: "tom@example.com",
+  },
+];
 
 module.exports = {
   movies,
